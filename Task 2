@@ -1,0 +1,76 @@
+
+import socket
+import requests
+import urllib3
+from OpenSSL import SSL
+import nmap
+
+# Function to scan for open ports
+def scan_open_ports(target, ports):
+    print(f"\nScanning open ports on {target}...")
+    open_ports = []
+    for port in ports:
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(1)
+            result = sock.connect_ex((target, port))
+            if result == 0:
+                open_ports.append(port)
+                print(f"Port {port} is open")
+            sock.close()
+        except Exception as e:
+            print(f"Error scanning port {port}: {e}")
+    return open_ports
+
+# Function to check for outdated software versions
+def check_outdated_software(url):
+    print(f"\nChecking for outdated software versions on {url}...")
+    try:
+        response = requests.get(url)
+        server_header = response.headers.get('Server', '')
+        print(f"Server header: {server_header}")
+        # Add logic to compare with known vulnerable versions
+    except Exception as e:
+        print(f"Error fetching {url}: {e}")
+
+# Function to check SSL/TLS settings using urllib3 and OpenSSL
+def check_ssl_tls(target):
+    print(f"\nChecking SSL/TLS configuration for {target}...")
+    try:
+        http = urllib3.PoolManager()
+        response = http.request('GET', f'https://{target}')
+        cert = response.connection.sock.getpeercert()
+        print(f"Certificate subject: {cert['subject']}")
+        print(f"Certificate issuer: {cert['issuer']}")
+        # Add more checks for certificate validity, protocol versions, etc.
+    except Exception as e:
+        print(f"Error checking SSL/TLS for {target}: {e}")
+
+# Function to scan for common misconfigurations
+def scan_misconfigurations(url):
+    print(f"\nScanning for common misconfigurations on {url}...")
+    try:
+        response = requests.get(url)
+        headers = response.headers
+        # Check for common issues like X-Frame-Options header missing
+        if 'X-Frame-Options' not in headers:
+            print("Missing X-Frame-Options header (possible clickjacking vulnerability)")
+        if 'Content-Security-Policy' not in headers:
+            print("Missing Content-Security-Policy header (possible XSS vulnerability)")
+        # Add more checks as needed
+    except Exception as e:
+        print(f"Error scanning {url} for misconfigurations: {e}")
+
+# Main function to run the tool
+def run_vulnerability_scan(target):
+    ports = [80, 443, 21, 22, 23, 25, 8080]  # Common ports to scan
+    scan_open_ports(target, ports)
+    check_outdated_software(f"http://{target}")
+    check_ssl_tls(target)
+    scan_misconfigurations(f"http://{target}")
+
+# Example usage
+if __name__ == "__main__":
+    target = input("Enter the target IP or domain: ")
+    run_vulnerability_scan(target)
+
