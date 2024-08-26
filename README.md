@@ -1,6 +1,6 @@
 **Name:** PRAGYA GOYAL
 
-**Company:** CODETECH IT SOLUTIONS PVT.LTD
+**Company:** CODTECH IT SOLUTIONS PVT.LTD
 
 **Position:** INTERN
 
